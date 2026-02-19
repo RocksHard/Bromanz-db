@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <title>Resistance Database - Global Access</title>
+    <style>
+        :root {
+            --neon-green: #00ff41;
+            --dark-bg: #0a0a0a;
+            --panel-bg: #141414;
+            --guide-blue: #00d4ff;
+        }
+
+        body { 
+            font-family: 'Consolas', 'Courier New', monospace; 
+            background: var(--dark-bg); color: #eee; margin: 0; 
+            display: flex; flex-direction: column; align-items: center;
+        }
+
+        header { 
+            background: linear-gradient(180deg, #1a1a1a 0%, #000 100%);
+            width: 100%; padding: 20px; text-align: center; 
+            border-bottom: 2px solid var(--neon-green);
+            position: sticky; top: 0; z-index: 1000;
+        }
+
+        .search-container { margin-top: 15px; width: 90%; max-width: 500px; display: inline-block; }
+        #globalSearch {
+            width: 100%; padding: 12px; background: #000; border: 1px solid var(--neon-green);
+            color: var(--neon-green); font-size: 14px; outline: none; text-transform: uppercase;
+        }
+
+        .nav-container { display: flex; gap: 20px; background: var(--panel-bg); padding: 15px; border: 1px solid #333; margin: 20px 0; border-radius: 4px; flex-wrap: wrap; justify-content: center; }
+        
+        .nav-group { display: flex; flex-direction: column; align-items: flex-start; gap: 5px; }
+        .nav-group label { font-size: 10px; color: var(--neon-green); letter-spacing: 1px; margin-left: 2px; }
+
+        select { padding: 10px; background: #000; color: var(--neon-green); border: 1px solid var(--neon-green); min-width: 200px; cursor: pointer; }
+        .guide-select { border-color: var(--guide-blue); color: var(--guide-blue); }
+
+        .item-section { display: none; width: 90%; max-width: 1200px; animation: fadeIn 0.3s; }
+        .item-section.active { display: block; }
+
+        .category-wrapper { margin-bottom: 40px; background: #000; padding: 10px; border: 1px solid #222; }
+        .category-header { font-size: 18px; padding: 10px; color: #fff; background: #1a1a1a; border-left: 5px solid var(--neon-green); margin-bottom: 15px; text-transform: uppercase; }
+        .guide-header { border-left-color: var(--guide-blue); }
+
+        .img-container { overflow: hidden; border: 1px solid #222; cursor: zoom-in; transition: border-color 0.2s; }
+        .img-container:hover { border-color: var(--neon-green); }
+        .clean-img { width: 100%; height: auto; filter: contrast(1.1) brightness(1.1); image-rendering: -webkit-optimize-contrast; margin-top: -45px; display: block; }
+        .no-crop { margin-top: 0 !important; }
+
+        /* ZOOM MODAL */
+        .modal {
+            display: none; position: fixed; z-index: 2000; top: 0; left: 0;
+            width: 100%; height: 100%; background: rgba(0,0,0,0.95);
+            justify-content: center; align-items: center; cursor: zoom-out;
+        }
+        .modal-content { max-width: 95%; max-height: 95%; border: 2px solid var(--neon-green); box-shadow: 0 0 25px rgba(0,255,65,0.5); }
+
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        .location-tag { color: var(--neon-green); text-shadow: 0 0 5px var(--neon-green); }
+        .guide-tag { color: var(--guide-blue); text-shadow: 0 0 5px var(--guide-blue); }
+    </style>
+</head>
+<body>
+
+<div id="imageModal" class="modal" onclick="this.style.display='none'">
+    <img class="modal-content" id="imgFull">
+</div>
+
+<header>
+    <h1><span class="location-tag">SYSTEM_ACCESS:</span> <span id="currentLoc">IDLE_STATE</span></h1>
+    <div class="search-container">
+        <input type="text" id="globalSearch" placeholder="SUCHE..." onkeyup="doSearch()">
+    </div>
+</header>
+
+<div class="nav-container">
+    <div class="nav-group">
+        <label>LOCATIONS (VENDORS)</label>
+        <select id="locationSelect" onchange="updateView('location')">
+            <option value="">-- SELECT LOCATION --</option>
+            <option value="resistance">RESISTANCE HQ</option>
+            <option value="booty">BOOTY BAY</option>
+            <option value="og">ORGRIMMAR</option>
+        </select>
+    </div>
+
+    <div class="nav-group">
+        <label>DATABASE GUIDES</label>
+        <select id="guideSelect" class="guide-select" onchange="updateView('guide')">
+            <option value="">-- SELECT GUIDE --</option>
+            <option value="medical_inventory">MEDICAL GUIDE (WORK IN PROGRESS)</option>
+            <option value="crafting_bench">CRAFTING (COMING SOON)</option>
+        </select>
+    </div>
+
+    <div class="nav-group" id="subnav_container" style="display:none;">
+        <label>VENDOR_ID</label>
+        <select id="vendorSelect" onchange="showVendorInventory()">
+            <option value="">-- SELECT VENDOR --</option>
+        </select>
+    </div>
+</div>
+
+<div class="display-area" id="mainDisplay">
+    
+    <div id="daryl_inventory" class="item-section" data-tags="cannabis equipment daryl raptor seeds bags bricks">
+        <div class="category-wrapper"><div class="category-header">Cannabis Equipment</div><div class="img-container" onclick="openModal(this)"><img class="clean-img" src="Screenshot 2026-02-19 025258.png"></div></div>
+        <div class="category-wrapper"><div class="category-header">Cannabis Seeds</div><div class="img-container" onclick="openModal(this)"><img class="clean-img" src="Screenshot 2026-02-19 025311.png"></div></div>
+        <div class="category-wrapper"><div class="category-header">Cannabis Bags</div><div class="img-container" onclick="openModal(this)"><img class="clean-img" src="Screenshot 2026-02-19 025324.png"></div></div>
+        <div class="category-wrapper"><div class="category-header">Cannabis Bricks</div><div class="img-container" onclick="openModal(this)"><img class="clean-img" src="Screenshot 2026-02-19 025339.png"></div></div>
+    </div>
+
+    <div id="gabi_inventory" class="item-section" data-tags="ingots bars gabi mining iron gold gems mining equipment">
+        <div class="category-wrapper"><div class="category-header">Ingots & Bars</div><div class="img-container" onclick="openModal(this)"><img class="clean-img" src="Screenshot 2026-02-19 031633.png"></div></div>
+        <div class="category-wrapper"><div class="category-header">Mining Equipment</div><div class="img-container" onclick="openModal(this)"><img class="clean-img" src="Screenshot 2026-02-19 031655.png"></div></div>
+        <div class="category-wrapper"><div class="category-header">Gems</div><div class="img-container" onclick="openModal(this)"><img class="clean-img" src="Screenshot 2026-02-19 031707.png"></div></div>
+    </div>
+
+    <div id="ines_inventory" class="item-section" data-tags="dna electronics ines chips">
+        <div class="category-wrapper"><div class="category-header">DNA & Electronics</div><div class="img-container" onclick="openModal(this)"><img class="clean-img" src="Screenshot 2026-02-19 031545.png"></div></div>
+    </div>
+
+    <div id="serious_inventory" class="item-section" data-tags="gold misc guns weapons mags serious stuff vehicles">
+        <div class="category-wrapper"><div class="category-header">Gold - Misc</div><div class="img-container" onclick="openModal(this)"><img class="clean-img" src="Screenshot 2026-02-19 032722.png"></div></div>
+        <div class="category-wrapper"><div class="category-header">Gold - Guns</div><div class="img-container" onclick="openModal(this)"><img class="clean-img no-crop" src="Screenshot 2026-02-19 032752.png"></div></div>
+        <div class="category-wrapper"><div class="category-header">Gold - Mags</div><div class="img-container" onclick="openModal(this)"><img class="clean-img" src="Screenshot 2026-02-19 032812.png"></div></div>
+        <div class="category-wrapper"><div class="category-header">Gold - Vehicles</div><div class="img-container" onclick="openModal(this)"><img class="clean-img" src="Screenshot 2026-02-19 032829.png"></div></div>
+    </div>
+
+    <div id="medical_inventory" class="item-section">
+	<div class="category-wrapper" data-tags="OVERVIEW ICONS"><div class="category-header guide-header">OVERVIEW ICONS</div><div class="img-container" onclick="openModal(this)"><img class="clean-img" src="Screenshot_2025-08-22_174345.png"></div></div>
+        <div class="category-wrapper" data-tags="HEMOSTASIS (BLLED RATE)"><div class="category-header guide-header">HEMOSTASIS (BLEED RATE)</div><div class="img-container" onclick="openModal(this)"><img class="clean-img" src="hemostatics.png"></div></div>
+        <div class="category-wrapper" data-tags="chemical poisoning neuroetal"><div class="category-header guide-header">Chemical Poisoning</div><div class="img-container" onclick="openModal(this)"><img class="clean-img" src="chemical.png"></div></div>
+        <div class="category-wrapper" data-tags="cold pneumonia stomaproxidal"><div class="category-header guide-header">Cold / Pneumonia</div><div class="img-container" onclick="openModal(this)"><img class="clean-img" src="cold.png"></div></div>
+        <div class="category-wrapper" data-tags="concussion charcoal"><div class="category-header guide-header">Concussion</div><div class="img-container" onclick="openModal(this)"><img class="clean-img" src="gehirn.png"></div></div>
+        <div class="category-wrapper" data-tags="neirox food poisoning"><div class="category-header guide-header">Neirox</div><div class="img-container" onclick="openModal(this)"><img class="clean-img" src="food.png"></div></div>
+        <div class="category-wrapper" data-tags="food poisoning charcoal"><div class="category-header guide-header">Food Poisoning</div><div class="img-container" onclick="openModal(this)"><img class="clean-img" src="Screenshot 2026-02-19 040201.png"></div></div>
+	<div class="category-wrapper" data-tags="PAIN"><div class="category-header guide-header">PAIN</div><div class="img-container" onclick="openModal(this)"><img class="clean-img" src="Pain.png"></div></div>
+        <div class="category-wrapper" data-tags="hematomas bruise verivax"><div class="category-header guide-header">Hematomas</div><div class="img-container" onclick="openModal(this)"><img class="clean-img" src="Screenshot 2026-02-19 040212.png"></div></div>
+        <div class="category-wrapper" data-tags="vaccine capsicum"><div class="category-header guide-header">Vaccine</div><div class="img-container" onclick="openModal(this)"><img class="clean-img" src="Screenshot 2026-02-19 040225.png"></div></div>
+        <div class="category-wrapper" data-tags="hemostasis bleeding rate vaxicam"><div class="category-header guide-header">Hemostasis</div><div class="img-container" onclick="openModal(this)"><img class="clean-img" src="Screenshot 2026-02-19 040237.png"></div></div>
+        <div class="category-wrapper" data-tags="mental health status overview"><div class="category-header guide-header">Status Overview</div><div class="img-container" onclick="openModal(this)"><img class="clean-img no-crop" src="Screenshot 2026-02-19 040255.png"></div></div>
+    </div>
+
+</div>
+
+<script>
+    const db = {
+        "resistance": { name: "RESISTANCE_HQ", vendors: [
+            { id: "daryl_inventory", name: "DARYL DIXON (DRUGS)" },
+            { id: "gabi_inventory", name: "GABI (MINING)" },
+            { id: "ines_inventory", name: "INES (DNA)" },
+            { id: "serious_inventory", name: "SERIOUS STUFF (GOLD ONLY!)" }
+        ]}
+    };
+
+    function openModal(el) {
+        const modal = document.getElementById("imageModal");
+        const modalImg = document.getElementById("imgFull");
+        modal.style.display = "flex";
+        modalImg.src = el.getElementsByTagName('img')[0].src;
+    }
+
+    function updateView(type) {
+        hideAll();
+        const locSel = document.getElementById('locationSelect');
+        const guideSel = document.getElementById('guideSelect');
+        const subnav = document.getElementById('subnav_container');
+        const locTitle = document.getElementById('currentLoc');
+
+        if (type === 'location') {
+            guideSel.value = "";
+            const locKey = locSel.value;
+            if (locKey && db[locKey]) {
+                locTitle.innerHTML = `<span class="location-tag">${db[locKey].name}</span>`;
+                subnav.style.display = "flex";
+                const vSel = document.getElementById('vendorSelect');
+                vSel.innerHTML = '<option value="">-- SELECT VENDOR --</option>';
+                db[locKey].vendors.forEach(v => {
+                    let opt = document.createElement('option');
+                    opt.value = v.id; opt.innerHTML = v.name; vSel.appendChild(opt);
+                });
+            } else { subnav.style.display = "none"; locTitle.innerText = "IDLE_STATE"; }
+        } else {
+            locSel.value = ""; subnav.style.display = "none";
+            const guideId = guideSel.value;
+            if (guideId) {
+                locTitle.innerHTML = `<span class="guide-tag">GUIDE: MEDICAL</span>`;
+                document.getElementById(guideId).classList.add('active');
+                document.getElementById(guideId).querySelectorAll('.category-wrapper').forEach(w => w.style.display = "block");
+            }
+        }
+    }
+
+    function showVendorInventory() {
+        const sections = document.querySelectorAll('.item-section');
+        sections.forEach(s => s.classList.remove('active'));
+        const vendorId = document.getElementById('vendorSelect').value;
+        if (vendorId) {
+            const sec = document.getElementById(vendorId);
+            sec.classList.add('active');
+            sec.querySelectorAll('.category-wrapper').forEach(w => w.style.display = "block");
+        }
+    }
+
+    function doSearch() {
+        const input = document.getElementById('globalSearch').value.toLowerCase();
+        if (input === "") { hideAll(); return; }
+        document.querySelectorAll('.item-section').forEach(sec => {
+            let match = false;
+            sec.querySelectorAll('.category-wrapper').forEach(wrap => {
+                const tags = wrap.getAttribute('data-tags')?.toLowerCase() || "";
+                if (tags.includes(input)) { wrap.style.display = "block"; match = true; } else { wrap.style.display = "none"; }
+            });
+            if (match) sec.classList.add('active'); else sec.classList.remove('active');
+        });
+    }
+
+    function hideAll() {
+        document.querySelectorAll('.item-section').forEach(s => s.classList.remove('active'));
+    }
+</script>
+</body>
+</html>
