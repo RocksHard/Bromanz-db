@@ -68,6 +68,50 @@
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
         .location-tag { color: var(--neon-green); text-shadow: 0 0 5px var(--neon-green); }
         .guide-tag { color: var(--guide-blue); text-shadow: 0 0 5px var(--guide-blue); }
+
+	.header-links {
+    	font-size: 20px;          /* Hier wird die Größe definiert */
+    	display: flex;
+    	justify-content: center;
+    	align-items: center;
+}
+
+.divider {
+    color: var(--neon-green);
+    opacity: 0.5;
+    margin: 0 20px;
+    font-weight: bold;
+}
+
+	/* Die IP und der Discord-Link bekommen das gleiche Aussehen */
+#server-ip, .discord-hacker-link {
+    font-size: 22px; 
+    color: var(--neon-green);
+    cursor: pointer;
+    font-weight: bold;
+    text-decoration: none; /* Entfernt Unterstrich beim Link */
+    transition: 0.3s;
+    font-family: 'Consolas', 'Courier New', monospace;
+}
+
+/* Hover-Effekt für beide gleich */
+#server-ip:hover, .discord-hacker-link:hover {
+    color: #fff;
+    text-shadow: 0 0 10px var(--neon-green);
+}
+
+/* Damit der Discord-Link vertikal mittig zur IP sitzt */
+.link-group {
+    display: flex;
+    align-items: center;
+    height: 100%;
+}
+
+.divider {
+    color: var(--neon-green);
+    opacity: 0.3;
+    font-size: 30px; /* Die Schrägstriche können ruhig groß sein */
+}
     </style>
 </head>
 <body>
@@ -78,6 +122,22 @@
 
 <header>
     <h1><span class="location-tag">BROMANZ Database:</span> <span id="currentLoc">IDLE_STATE</span></h1>
+    
+  <h2 class="header-links">
+    <span class="divider">//</span>
+
+    <a href="https://discord.com/invite/A98MMafYGm" target="_blank" class="discord-hacker-link">DISCORD</a>
+    
+    <span class="divider">//</span>
+
+    <div class="ip-unit" onclick="copyIP()" title="Klicken zum Kopieren">
+        <span class="ip-label-inline">COPY SERVER IP: </span>
+        <span id="server-ip">64.31.29.245:2302</span>
+    </div>
+
+    <span class="divider">//</span>
+</h2>
+    
     <div class="search-container">
         <input type="text" id="globalSearch" placeholder="SUCHE..." onkeyup="doSearch()">
     </div>
@@ -113,7 +173,7 @@
 
 <div class="display-area" id="mainDisplay">
     
-    <div id="daryl_inventory" class="item-section" data-tags="cannabis equipment daryl raptor seeds bags bricks">
+    <div id="daryl_inventory" class="item-section" data-tags="cannabis equipment daryl seeds bags bricks">
         <div class="category-wrapper"><div class="category-header">Cannabis Equipment</div><div class="img-container" onclick="openModal(this)"><img class="clean-img" src="Screenshot 2026-02-19 025258.png"></div></div>
         <div class="category-wrapper"><div class="category-header">Cannabis Seeds</div><div class="img-container" onclick="openModal(this)"><img class="clean-img" src="Screenshot 2026-02-19 025311.png"></div></div>
         <div class="category-wrapper"><div class="category-header">Cannabis Bags</div><div class="img-container" onclick="openModal(this)"><img class="clean-img" src="Screenshot 2026-02-19 025324.png"></div></div>
@@ -229,11 +289,33 @@
     function hideAll() {
         document.querySelectorAll('.item-section').forEach(s => s.classList.remove('active'));
     }
+	
+	function copyIP() {
+    // 1. Wir holen uns den Text der IP
+    const ipElement = document.getElementById('server-ip');
+    const ipText = ipElement.innerText;
+
+    // 2. Wir kopieren den Text in die Zwischenablage
+    navigator.clipboard.writeText(ipText).then(() => {
+        // 3. Optionales Feedback: Die IP leuchtet kurz weiß auf
+        const originalColor = ipElement.style.color;
+        ipElement.style.color = "#ffffff";
+        
+        // Konsolen-Log für dich zum Testen (F12 im Browser)
+        console.log("IP erfolgreich kopiert: " + ipText);
+
+        setTimeout(() => {
+            ipElement.style.color = originalColor;
+        }, 200);
+    }).catch(err => {
+        // Falls ein Fehler auftritt (z.B. Browser-Sicherheit)
+        console.error("Fehler beim Kopieren: ", err);
+    });
+}
 </script>
 </body>
 
 </html>
-
 
 
 
